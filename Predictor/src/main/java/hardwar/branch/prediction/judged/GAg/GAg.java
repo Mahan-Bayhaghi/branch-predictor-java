@@ -60,13 +60,14 @@ public class GAg implements BranchPredictor {
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
         // TODO: complete Task 2
-        Bit[] new_value = new Bit[this.SC.getLength()];
+        Bit[] new_value;
         if (actual.equals(BranchResult.TAKEN))
             new_value = CombinationalLogic.count(this.SC.read() , true , CountMode.SATURATING);
         else
             new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
 
-        this.PHT.putIfAbsent(SC.read() , new_value);
+        this.PHT.put(SC.read() , new_value);
+        this.BHR.load(instruction.getInstructionAddress());
     }
 
 
