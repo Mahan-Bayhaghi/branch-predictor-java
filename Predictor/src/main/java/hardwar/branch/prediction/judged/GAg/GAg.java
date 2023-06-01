@@ -66,7 +66,7 @@ public class GAg implements BranchPredictor {
         else
             new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
 
-        this.PHT.put(SC.read() , new_value);
+        this.PHT.put(BHR.read() , new_value);
         if (actual.equals(BranchResult.TAKEN))
             this.BHR.insert(Bit.ZERO);
         else
