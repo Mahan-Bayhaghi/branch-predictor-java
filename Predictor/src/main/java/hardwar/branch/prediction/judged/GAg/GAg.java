@@ -25,7 +25,7 @@ public class GAg implements BranchPredictor {
         // Initialize the BHR register with the given size and no default value
         Bit[] array = new Bit[BHRSize];
         Arrays.fill(array,Bit.ZERO);
-        this.BHR = new SIPORegister("shit-name2" , BHRSize , array);
+        this.BHR = new SIPORegister("shit-name2" , BHRSize , null);
 
         // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
         PHT = new PageHistoryTable(1<<BHRSize , SCSize);
@@ -33,7 +33,7 @@ public class GAg implements BranchPredictor {
         // Initialize the SC register
         Bit[] array2 = new Bit[SCSize];
         Arrays.fill(array2,Bit.ZERO);
-        this.SC = new SIPORegister("shit-name1" , SCSize , array2);
+        this.SC = new SIPORegister("shit-name1" , SCSize , null);
     }
 
     /**
