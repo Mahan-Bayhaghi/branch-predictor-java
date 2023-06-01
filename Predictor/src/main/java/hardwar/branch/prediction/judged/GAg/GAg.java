@@ -43,12 +43,9 @@ public class GAg implements BranchPredictor {
         // TODO : complete Task 1
         Bit[] bhrValue = this.BHR.read();
 
-        try {
-            this.SC.load(this.PHT.get(bhrValue));
-        } catch (Exception e){
-            this.PHT.setDefault(bhrValue , getDefaultBlock());
-            this.SC.load(this.PHT.get(bhrValue));
-        }
+        this.PHT.putIfAbsent(bhrValue , getDefaultBlock());
+        this.SC.load(this.PHT.get(bhrValue));
+
         if (this.SC.read()[0].equals(Bit.ZERO))
             return  BranchResult.NOT_TAKEN;
         else return BranchResult.TAKEN;
