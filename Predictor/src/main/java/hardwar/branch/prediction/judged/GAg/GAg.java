@@ -41,11 +41,14 @@ public class GAg implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO : complete Task 1
-//        Bit[] addr = this.BHR.read();
-//        this.SC.load(PHT.get(addr));
         Bit[] bhrValue = this.BHR.read();
-        this.SC.load(this.PHT.get(bhrValue));
 
+        try {
+            this.SC.load(this.PHT.get(bhrValue));
+        } catch (Exception e){
+            this.PHT.setDefault(bhrValue , getDefaultBlock());
+            this.SC.load(this.PHT.get(bhrValue));
+        }
         if (this.SC.read()[0].equals(Bit.ZERO))
             return  BranchResult.NOT_TAKEN;
         else return BranchResult.TAKEN;
