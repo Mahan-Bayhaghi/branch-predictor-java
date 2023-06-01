@@ -23,16 +23,12 @@ public class GAg implements BranchPredictor {
     public GAg(int BHRSize, int SCSize) {
         // TODO : complete the constructor
         // Initialize the BHR register with the given size and no default value
-        Bit[] array = new Bit[BHRSize];
-        Arrays.fill(array,Bit.ZERO);
         this.BHR = new SIPORegister("shit-name2" , BHRSize , null);
 
         // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
         PHT = new PageHistoryTable(1<<BHRSize , SCSize);
 
         // Initialize the SC register
-        Bit[] array2 = new Bit[SCSize];
-        Arrays.fill(array2,Bit.ZERO);
         this.SC = new SIPORegister("shit-name1" , SCSize , null);
     }
 
@@ -45,10 +41,12 @@ public class GAg implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO : complete Task 1
-        Bit[] addr = this.BHR.read();
-        this.SC.load(PHT.get(addr));
+//        Bit[] addr = this.BHR.read();
+//        this.SC.load(PHT.get(addr));
+        Bit[] bhrValue = this.BHR.read();
+        this.SC.load(this.PHT.get(bhrValue));
 
-        if (this.SC.read()[0] == Bit.ZERO)
+        if (this.SC.read()[0].equals(Bit.ZERO))
             return  BranchResult.NOT_TAKEN;
         else return BranchResult.TAKEN;
     }
@@ -62,10 +60,13 @@ public class GAg implements BranchPredictor {
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
         // TODO: complete Task 2
+        Bit[] new_value = new Bit[this.SC.getLength()];
         if (actual.equals(BranchResult.TAKEN))
-            CombinationalLogic.count(this.SC.read() , true , CountMode.SATURATING);
+            new_value = CombinationalLogic.count(this.SC.read() , true , CountMode.SATURATING);
         else
-            CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
+            new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
+
+        this.PHT.putIfAbsent(SC.read() , new_value);
     }
 
 
