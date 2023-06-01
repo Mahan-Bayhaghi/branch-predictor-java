@@ -25,13 +25,13 @@ public class PAg implements BranchPredictor {
     public PAg(int BHRSize, int SCSize, int branchInstructionSize) {
         // TODO: complete the constructor
         // Initialize the PABHR with the given bhr and branch instruction size
-        PABHR = null;
+        PABHR = new RegisterBank(branchInstructionSize , BHRSize);
 
         // Initialize the PHT with a size of 2^size and each entry having a saturating counter of size "SCSize"
-        PHT = null;
+        PHT = new PageHistoryTable(1<<BHRSize , SCSize);
 
         // Initialize the SC register
-        SC = null;
+        this.SC = new SIPORegister("shit-name1" , SCSize , null);
     }
 
     /**
@@ -40,8 +40,15 @@ public class PAg implements BranchPredictor {
      */
     @Override
     public BranchResult predict(BranchInstruction instruction) {
-        // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        // TODO : complete Task 1
+        ShiftRegister currentBHR = this.PABHR.read(instruction.getInstructionAddress());
+        Bit[] bhrValue = currentBHR.read();
+        this.PHT.putIfAbsent(bhrValue , getDefaultBlock());
+        this.SC.load(this.PHT.get(bhrValue));
+
+        if (this.SC.read()[0].equals(Bit.ZERO))
+            return  BranchResult.NOT_TAKEN;
+        else return BranchResult.TAKEN;
     }
 
     /**
@@ -50,7 +57,18 @@ public class PAg implements BranchPredictor {
      */
     @Override
     public void update(BranchInstruction instruction, BranchResult actual) {
-        // TODO: complete Task 2
+        ShiftRegister BHR = PABHR.read(instruction.getInstructionAddress());
+        Bit[] new_value;
+        if (actual.equals(BranchResult.TAKEN))
+            new_value = CombinationalLogic.count(this.SC.read() , true , CountMode.SATURATING);
+        else
+            new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
+        this.PHT.put(BHR.read() , new_value);
+
+        if (actual.equals(BranchResult.TAKEN))
+            BHR.insert(Bit.ONE);
+        else
+            BHR.insert(Bit.ZERO);
     }
 
     /**
