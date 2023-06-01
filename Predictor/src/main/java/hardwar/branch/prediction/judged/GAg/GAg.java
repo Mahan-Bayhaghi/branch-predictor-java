@@ -73,7 +73,6 @@ public class GAg implements BranchPredictor {
             this.BHR.insert(Bit.ZERO);
     }
 
-
     /**
      * @return a zero series of bits as default value of cache block
      */
