@@ -53,11 +53,11 @@ public class GAp implements BranchPredictor {
         this.SC.load(this.PAPHT.get(bhrValue));
 
         Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
-//        System.arraycopy(bhrValue, 0, result, 0, this.BHR.getLength());
-        System.arraycopy(branchInstruction.getInstructionAddress(), 0, result, this.BHR.getLength(), branchInstructionSize);
-        System.arraycopy(bhrValue, 0, result, 0, this.BHR.getLength());
-        
-//        System.arraycopy(branchInstruction.getInstructionAddress(), 0, result, this.BHR.getLength(), branchInstructionSize);
+
+        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+
+        System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
+        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
 
         this.PAPHT.putIfAbsent(result , getDefaultBlock());
         this.SC.load(this.PAPHT.get(result));
@@ -82,7 +82,13 @@ public class GAp implements BranchPredictor {
         else
             new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
 
-        this.PAPHT.put(BHR.read() , new_value);
+        Bit[] bhrValue = this.BHR.read();
+
+        Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
+        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+        System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
+        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
+        this.PAPHT.put(result , new_value);
 
         if (actual.equals(BranchResult.TAKEN))
             this.BHR.insert(Bit.ONE);
