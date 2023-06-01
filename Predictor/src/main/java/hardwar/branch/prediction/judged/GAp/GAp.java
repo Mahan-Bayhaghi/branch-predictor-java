@@ -53,8 +53,11 @@ public class GAp implements BranchPredictor {
         this.SC.load(this.PAPHT.get(bhrValue));
 
         Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
-        System.arraycopy(bhrValue, 0, result, 0, this.BHR.getLength());
+//        System.arraycopy(bhrValue, 0, result, 0, this.BHR.getLength());
         System.arraycopy(branchInstruction.getInstructionAddress(), 0, result, this.BHR.getLength(), branchInstructionSize);
+        System.arraycopy(bhrValue, 0, result, 0, this.BHR.getLength());
+        
+//        System.arraycopy(branchInstruction.getInstructionAddress(), 0, result, this.BHR.getLength(), branchInstructionSize);
 
         this.PAPHT.putIfAbsent(result , getDefaultBlock());
         this.SC.load(this.PAPHT.get(result));
