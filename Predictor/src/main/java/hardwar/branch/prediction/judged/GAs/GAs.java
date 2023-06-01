@@ -29,19 +29,19 @@ public class GAs implements BranchPredictor {
      */
     public GAs(int BHRSize, int SCSize, int branchInstructionSize, int KSize, HashMode hashmode) {
         // TODO: complete the constructor
-        this.branchInstructionSize = 0;
-        this.KSize = 0;
-        this.hashMode = HashMode.XOR;
+        this.branchInstructionSize = branchInstructionSize;
+        this.KSize = KSize;
+        this.hashMode = hashmode;
 
         // Initialize the BHR register with the given size and no default value
-        BHR = null;
+        this.BHR = new SIPORegister("shit-name2" , BHRSize , null);
 
         // Initializing the PAPHT with K bit as PHT selector and 2^BHRSize row as each PHT entries
         // number and SCSize as block size
-        PSPHT = null;
+        this.PSPHT = new PageHistoryTable((1<<(BHRSize + KSize)), SCSize);
 
         // Initialize the saturating counter
-        SC = null;
+        this.SC = new SIPORegister("shit-name1" , SCSize , null);
     }
 
     /**
@@ -54,7 +54,24 @@ public class GAs implements BranchPredictor {
     @Override
     public BranchResult predict(BranchInstruction branchInstruction) {
         // TODO: complete Task 1
-        return BranchResult.NOT_TAKEN;
+        Bit[] bhrValue = this.BHR.read();
+
+        this.PSPHT.putIfAbsent(bhrValue , getDefaultBlock());
+        this.SC.load(this.PSPHT.get(bhrValue));
+
+        Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
+        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+        System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
+        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
+
+        Bit[] hashed = CombinationalLogic.hash(result , KSize , this.hashMode);
+
+        this.PSPHT.putIfAbsent(hashed , getDefaultBlock());
+        this.SC.load(this.PSPHT.get(hashed));
+
+        if (this.SC.read()[0].equals(Bit.ZERO))
+            return  BranchResult.NOT_TAKEN;
+        else return BranchResult.TAKEN;
     }
 
     /**
@@ -66,6 +83,23 @@ public class GAs implements BranchPredictor {
     @Override
     public void update(BranchInstruction branchInstruction, BranchResult actual) {
         // TODO: complete Task 2
+        Bit[] new_value;
+        if (actual.equals(BranchResult.TAKEN))
+            new_value = CombinationalLogic.count(this.SC.read() , true , CountMode.SATURATING);
+        else
+            new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
+        Bit[] bhrValue = this.BHR.read();
+
+        Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
+        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+        System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
+        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
+        this.PSPHT.put(result , new_value);
+
+        if (actual.equals(BranchResult.TAKEN))
+            this.BHR.insert(Bit.ONE);
+        else
+            this.BHR.insert(Bit.ZERO);
     }
 
     /**

@@ -96,7 +96,6 @@ public class GAp implements BranchPredictor {
             this.BHR.insert(Bit.ZERO);
     }
 
-
     /**
      * concat the branch address and BHR to retrieve the desired address
      *
