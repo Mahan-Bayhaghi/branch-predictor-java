@@ -59,15 +59,13 @@ public class GAs implements BranchPredictor {
         this.PSPHT.putIfAbsent(bhrValue , getDefaultBlock());
         this.SC.load(this.PSPHT.get(bhrValue));
 
-        Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
-        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+        Bit[] result = new Bit[this.BHR.getLength() + KSize];
+        Bit[] branchAddress = CombinationalLogic.hash(branchInstruction.getInstructionAddress() , KSize , this.hashMode);
         System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
-        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
+        System.arraycopy(bhrValue, 0, result, KSize, bhrValue.length);
 
-        Bit[] hashed = CombinationalLogic.hash(result , KSize , this.hashMode);
-
-        this.PSPHT.putIfAbsent(hashed , getDefaultBlock());
-        this.SC.load(this.PSPHT.get(hashed));
+        this.PSPHT.putIfAbsent(result , getDefaultBlock());
+        this.SC.load(this.PSPHT.get(result));
 
         if (this.SC.read()[0].equals(Bit.ZERO))
             return  BranchResult.NOT_TAKEN;
@@ -90,10 +88,10 @@ public class GAs implements BranchPredictor {
             new_value = CombinationalLogic.count(this.SC.read() , false, CountMode.SATURATING);
         Bit[] bhrValue = this.BHR.read();
 
-        Bit[] result = new Bit[this.BHR.getLength() + this.branchInstructionSize];
-        Bit[] branchAddress = branchInstruction.getInstructionAddress();
+        Bit[] result = new Bit[this.BHR.getLength() + KSize];
+        Bit[] branchAddress = CombinationalLogic.hash(branchInstruction.getInstructionAddress() , KSize , this.hashMode);
         System.arraycopy(branchAddress, 0, result, 0, branchAddress.length);
-        System.arraycopy(bhrValue, 0, result, branchAddress.length, bhrValue.length);
+        System.arraycopy(bhrValue, 0, result, KSize, bhrValue.length);
         this.PSPHT.put(result , new_value);
 
         if (actual.equals(BranchResult.TAKEN))
